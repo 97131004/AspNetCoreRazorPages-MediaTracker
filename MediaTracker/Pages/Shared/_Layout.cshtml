@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — MediaTracker</title>
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a class="nav-brand" href="/">MediaTracker</a>
+            <div class="nav-links">
+                @{
+                    var path = Context.Request.Path.Value?.ToLower() ?? "/";
+                }
+                <a class="nav-link @(path == "/" ? "active" : "")" href="/">To be watched/played</a>
+                <a class="nav-link @(path.StartsWith("/library") ? "active" : "")" href="/Library">Library</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main">
+        @RenderBody()
+    </main>
+</body>
+</html>

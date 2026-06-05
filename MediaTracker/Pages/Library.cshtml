@@ -1,0 +1,203 @@
+@page
+@model LibraryModel
+@using MediaTracker.Modules.Media.Models
+
+@{
+    ViewData["Title"] = "Library";
+}
+
+@functions {
+
+    static string BadgeClass(WatchStatus s) => s switch
+    {
+        WatchStatus.PlanToWatch => "badge-plan",
+        WatchStatus.Watching => "badge-watching",
+        WatchStatus.Completed => "badge-completed",
+        _ => "badge-none"
+    };
+
+    static string TypeLabel(MediaType t) => t == MediaType.TvShow ? "TV Show" : t.ToString();
+    static string TagClass(MediaType t) => t switch
+    {
+        MediaType.Movie => "tag-movie",
+        MediaType.TvShow => "tag-tvshow",
+        MediaType.Game => "tag-game",
+        _ => ""
+    };
+
+    static string PlanLabel(MediaType t) => t == MediaType.Game ? "Plan to Play" : "Plan to Watch";
+    static string WatchLabel(MediaType t) => t == MediaType.Game ? "Playing" : "Watching";
+    static string DoneLabel(MediaType t) => t == MediaType.Game ? "Played" : "Completed";
+
+    string HiddenState() =>
+        "<input type='hidden' name='sort' value='" + Model.CurrentSort + "' />" +
+        "<input type='hidden' name='dir' value='" + Model.CurrentDir + "' />" +
+        (Model.CurrentType.HasValue ? "<input type='hidden' name='type' value='" + Model.CurrentType.Value.ToString().ToLower() + "' />" : "");
+
+
+
+    static bool IsUrl(string v) =>
+        v.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+        v.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+}
+
+@* ════════════════════════════════════════════════════════════════════════════
+    Notification message
+    ════════════════════════════════════════════════════════════════════════════ *@
+
+@if (TempData["Success"] is string msg)
+{
+    <div class="alert alert-success">@msg</div>
+}
+@if (TempData["Removed"] is string removedMsg)
+{
+    <div class="alert alert-removed">@removedMsg</div>
+}
+
+@await Component.InvokeAsync("AddMedia", new { model = Model })
+
+@if (Model.DetailId.HasValue)
+{
+    var detailMedia = Model.Items.FirstOrDefault(i => i.Id == Model.DetailId.Value);
+    if (detailMedia is not null)
+    {
+        var detailItems = Model.GetItemData(detailMedia.Id).ToList();
+        @await Component.InvokeAsync("MediaDetail", new { media = detailMedia, detailItems = detailItems, model = Model })
+    }
+}
+
+@* ════════════════════════════════════════════════════════════════════════════
+    Page header
+    ════════════════════════════════════════════════════════════════════════════ *@
+<div class="page-top">
+    <h1 class="page-title">Library</h1>
+    <button type="button" class="btn btn-primary" onclick="document.getElementById('add-dialog').showModal()">+ Add</button>
+</div>
+
+@* ════════════════════════════════════════════════════════════════════════════
+    Type filter
+    ════════════════════════════════════════════════════════════════════════════ *@
+<div class="filter-row">
+    <a href="@Model.TypeHref(null)" class="btn btn-sm @(Model.CurrentType == null ? "btn-primary" : "btn-ghost")">All</a>
+    <a href="@Model.TypeHref("movie")" class="btn btn-sm @(Model.CurrentType == MediaType.Movie  ? "btn-primary" : "btn-ghost")">Movies</a>
+    <a href="@Model.TypeHref("tvshow")" class="btn btn-sm @(Model.CurrentType == MediaType.TvShow ? "btn-primary" : "btn-ghost")">TV Shows</a>
+    <a href="@Model.TypeHref("game")" class="btn btn-sm @(Model.CurrentType == MediaType.Game ? "btn-primary" : "btn-ghost")">Games</a>
+</div>
+
+@* ════════════════════════════════════════════════════════════════════════════
+    Table
+    ════════════════════════════════════════════════════════════════════════════ *@
+@if (!Model.Items.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Library is empty</div>
+        <div class="empty-state-text">Click "+ Add" to start tracking movies, shows, and games.</div>
+    </div>
+}
+else
+{
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th><a class="sort-link" href="@Model.SortHref(SortColumn.Title)">Title @Model.SortIndicator(SortColumn.Title)</a></th>
+                    <th><a class="sort-link" href="@Model.SortHref(SortColumn.Type)">Type @Model.SortIndicator(SortColumn.Type)</a></th>
+                    <th><a class="sort-link" href="@Model.SortHref(SortColumn.ReleaseDate)">Release Date @Model.SortIndicator(SortColumn.ReleaseDate)</a></th>
+                    <th><a class="sort-link" href="@Model.SortHref(SortColumn.Status)">Status @Model.SortIndicator(SortColumn.Status)</a></th>
+                    <th><a class="sort-link" href="@Model.SortHref(SortColumn.Rating)">Rating @Model.SortIndicator(SortColumn.Rating)</a></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <form method="post" asp-page-handler="UpdateTitle" class="inline-edit-form">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                @Html.Raw(HiddenState())
+                                <input type="text" name="newTitle" value="@item.Title" class="inline-title" />
+                                <button type="submit" class="btn btn-sm btn-ghost">&#x2713;</button>
+                            </form>
+                        </td>
+                        <td>
+                            <span class="tag @TagClass(item.MediaType)">@TypeLabel(item.MediaType)</span>
+                        </td>
+                        <td>
+                            <form method="post" asp-page-handler="UpdateReleaseDate" class="inline-edit-form">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                @Html.Raw(HiddenState())
+                                <input type="date" name="newReleaseDate"
+                                       value="@(item.ReleaseDate?.ToString("yyyy-MM-dd") ?? "")"
+                                       class="inline-date" />
+                                <button type="submit" class="btn btn-sm btn-ghost">&#x2713;</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" asp-page-handler="UpdateStatus">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                @Html.Raw(HiddenState())
+                                <select name="newStatus" class="status-select @BadgeClass(item.Status)"
+                                        onchange="this.form.submit()" data-cur="@((int)item.Status)">
+                                    <option value="1">@PlanLabel(item.MediaType)</option>
+                                    <option value="2">@WatchLabel(item.MediaType)</option>
+                                    <option value="3">@DoneLabel(item.MediaType)</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" asp-page-handler="UpdateRating" class="inline-edit-form">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                @Html.Raw(HiddenState())
+                                <input type="number" name="rating" min="1" max="10"
+                                       value="@(item.Rating?.ToString() ?? "")"
+                                       placeholder="-" class="inline-number" />
+                                <button type="submit" class="btn btn-sm btn-ghost">&#x2713;</button>
+                            </form>
+                        </td>
+                        <td class="td-actions">
+                            <a href="@Model.DetailHref(item.Id)" class="btn btn-sm btn-ghost">Details</a>
+                            <form method="post" asp-page-handler="Delete" style="display:inline">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                @Html.Raw(HiddenState())
+                                <button type="submit" class="btn btn-sm btn-danger">&#x2715;</button>
+                            </form>
+                        </td>
+                    </tr>
+                    var detailData = Model.GetItemData(item.Id);
+                    if (detailData is not null && detailData.Count > 0)
+                    {
+                        <tr>
+                            <td colspan="6">
+                                @foreach (var detail in detailData)
+                                {
+                                    <div class="data-chip">
+                                        <span class="data-chip-type">@detail.DataType</span>
+                                        @if (IsUrl(detail.Value))
+                                        {
+                                            <a href="@detail.Value" target="_blank" rel="noopener" class="data-chip-link">@detail.Value</a>
+                                        }
+                                        else
+                                        {
+                                            <span>@detail.Value</span>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+@if (Model.ShowAddDialog)
+{
+    <script>document.getElementById('add-dialog').showModal();</script>
+}
+
+<script>
+    document.querySelectorAll('.status-select[data-cur]').forEach(s => s.value = s.dataset.cur);
+</script>

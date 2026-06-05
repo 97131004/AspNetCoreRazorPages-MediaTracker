@@ -1,0 +1,83 @@
+@page
+@model IndexModel
+@using MediaTracker.Modules.Media.Models
+@{
+    ViewData["Title"] = "To be watched/played";
+}
+
+@functions {
+    static string StatusLabel(WatchStatus s, MediaType t) => (s, t) switch
+    {
+        (WatchStatus.PlanToWatch, MediaType.Game) => "Plan to Play",
+        (WatchStatus.PlanToWatch, _) => "Plan to Watch",
+        (WatchStatus.Watching, MediaType.Game) => "Playing",
+        (WatchStatus.Watching, _) => "Watching",
+        (WatchStatus.Completed, MediaType.Game) => "Played",
+        (WatchStatus.Completed, _) => "Completed",
+        _ => s.ToString()
+    };
+
+    static string BadgeClass(WatchStatus s) => s switch
+    {
+        WatchStatus.PlanToWatch => "badge-plan",
+        WatchStatus.Watching => "badge-watching",
+        WatchStatus.Completed => "badge-completed",
+        _ => "badge-none"
+    };
+
+    static string TypeLabel(MediaType t) => t == MediaType.TvShow ? "TV Show" : t.ToString();
+}
+
+<div class="page-top">
+    <h1 class="page-title">To be watched/played</h1>
+</div>
+
+<div class="filter-row">
+    <a href="@Model.TypeHref(null)" class="btn btn-sm @(Model.CurrentType == null ? "btn-primary" : "btn-ghost")">All</a>
+    <a href="@Model.TypeHref("movie")" class="btn btn-sm @(Model.CurrentType == MediaType.Movie ? "btn-primary" : "btn-ghost")">Movies</a>
+    <a href="@Model.TypeHref("tvshow")"class="btn btn-sm @(Model.CurrentType == MediaType.TvShow ? "btn-primary" : "btn-ghost")">TV Shows</a>
+    <a href="@Model.TypeHref("game")" class="btn btn-sm @(Model.CurrentType == MediaType.Game ? "btn-primary" : "btn-ghost")">Games</a>
+</div>
+
+@if (!Model.Items.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Nothing planned yet</div>
+        <div class="empty-state-text">Add media in the <a href="/Library">Library</a> and set its status to Plan to Watch or Plan to Play.</div>
+    </div>
+}
+else
+{
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Release Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td>@TypeLabel(item.MediaType)</td>
+                        <td><span class="badge @BadgeClass(item.Status)">@StatusLabel(item.Status, item.MediaType)</span></td>
+                        <td>
+                            @if (item.ReleaseDate.HasValue)
+                            {
+                                @item.ReleaseDate.Value.ToString("MMM d, yyyy")
+                            }
+                            else
+                            {
+                                <span style="color:var(--text-muted)">TBA</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

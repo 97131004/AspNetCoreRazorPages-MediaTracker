@@ -1,0 +1,74 @@
+@model MediaTracker.Pages.Shared.Components.MediaDetailViewModel
+
+<dialog id="detail-dialog">
+    <div class="dialog-inner">
+        <div class="dialog-header">
+            <div>
+                <div class="dialog-title">Details for @Model.Media.Title</div>
+                <div class="detail-meta-row">
+                    <span class="tag @Model.TagClass">@Model.TypeLabel</span>
+                </div>
+            </div>
+            <a href="@Model.CloseDetailHref()" class="dialog-close">&#x2715;</a>
+        </div>
+
+        @if (Model.DetailItems.Count > 0)
+        {
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.DetailItems)
+                    {
+                        <tr>
+                            <td colspan="2">
+                                <form method="post" asp-page-handler="DetailUpdate" class="inline-edit-form">
+                                    @Html.Raw(Model.HiddenDetailState())
+                                    <input type="hidden" name="entryId" value="@entry.Id" />
+                                    <input type="text" name="dataType" value="@entry.DataType"
+                                           class="inline-datatype" required />
+                                    <input type="text" name="value" value="@entry.Value"
+                                           class="inline-value" required />
+                                    <button type="submit" class="btn btn-sm btn-ghost">&#x2713;</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="post" asp-page-handler="DetailDelete">
+                                    @Html.Raw(Model.HiddenDetailState())
+                                    <input type="hidden" name="entryId" value="@entry.Id" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="no-data-text">No entries yet. Add one below.</p>
+        }
+
+        <div class="section-divider"></div>
+
+        <form method="post" asp-page-handler="DetailAdd">
+            @Html.Raw(Model.HiddenDetailState())
+            <div class="add-data-row">
+                <input type="text" name="newDataType" placeholder="Type (e.g. link)"
+                       class="add-dtype-input" required />
+                <input type="text" name="newDataValue" placeholder="Value"
+                       class="add-value-input" required />
+                <button type="submit" class="btn btn-primary btn-sm">Add</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+    document.getElementById('detail-dialog').showModal();
+</script>
