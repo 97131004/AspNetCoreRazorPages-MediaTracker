@@ -43,13 +43,8 @@ Database schema explicitly separates core entity metadata (MediaEntries) from it
 
 ## Installation & Setup
 
-1. **Build the project once:**
-   ```bash
-   dotnet build MediaTracker
-   ```
+Build the solution once, then run following commands to initialise database (for main project):
 
-2. **Generate and Apply Database Migrations:**
-   Run these commands inside the `MediaTracker/` project directory to initialize the database contexts before running the application:
    ```bash
    dotnet ef migrations add InitialCreate --context MediaDbContext
    dotnet ef migrations add InitialCreate --context MediaDataDbContext
@@ -57,12 +52,9 @@ Database schema explicitly separates core entity metadata (MediaEntries) from it
    dotnet ef database update --context MediaDataDbContext
    ```
 
-3. **Run the Application:**
-   ```bash
-   dotnet run
-   ```
+Database connection string in `appsettings.json`.
 
-### Screenshots
+## Screenshots
 
 ![screenshot](Screenshots/4.png?raw=true)
 
