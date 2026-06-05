@@ -41,10 +41,6 @@
         v.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 }
 
-@* ════════════════════════════════════════════════════════════════════════════
-    Notification message
-    ════════════════════════════════════════════════════════════════════════════ *@
-
 @if (TempData["Success"] is string msg)
 {
     <div class="alert alert-success">@msg</div>
@@ -66,17 +62,11 @@
     }
 }
 
-@* ════════════════════════════════════════════════════════════════════════════
-    Page header
-    ════════════════════════════════════════════════════════════════════════════ *@
 <div class="page-top">
     <h1 class="page-title">Library</h1>
     <button type="button" class="btn btn-primary" onclick="document.getElementById('add-dialog').showModal()">+ Add</button>
 </div>
 
-@* ════════════════════════════════════════════════════════════════════════════
-    Type filter
-    ════════════════════════════════════════════════════════════════════════════ *@
 <div class="filter-row">
     <a href="@Model.TypeHref(null)" class="btn btn-sm @(Model.CurrentType == null ? "btn-primary" : "btn-ghost")">All</a>
     <a href="@Model.TypeHref("movie")" class="btn btn-sm @(Model.CurrentType == MediaType.Movie  ? "btn-primary" : "btn-ghost")">Movies</a>
@@ -84,9 +74,6 @@
     <a href="@Model.TypeHref("game")" class="btn btn-sm @(Model.CurrentType == MediaType.Game ? "btn-primary" : "btn-ghost")">Games</a>
 </div>
 
-@* ════════════════════════════════════════════════════════════════════════════
-    Table
-    ════════════════════════════════════════════════════════════════════════════ *@
 @if (!Model.Items.Any())
 {
     <div class="empty-state">
