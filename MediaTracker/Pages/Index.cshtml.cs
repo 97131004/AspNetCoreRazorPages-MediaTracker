@@ -24,7 +24,7 @@ public class IndexModel : PageModel
             _ => null
         };
 
-        var query = MediaDb.MediaEntries.Where(e => e.Status == WatchStatus.PlanToWatch);
+        var query = MediaDb.MediaEntries.Where(e => e.Status == WatchStatus.PlanToWatch || e.Status == WatchStatus.Watching);
 
         if (CurrentType.HasValue)
         {
@@ -32,14 +32,18 @@ public class IndexModel : PageModel
         }
 
         var today = DateTime.Today;
-        // for dates in future: sort by ReleaseDate ascendingly
-        // for dates in past: sort by ReleaseDate descendingly
         Items = await query
-            .OrderBy(e => e.ReleaseDate.HasValue && e.ReleaseDate.Value >= today ? 0 : 1)
-            .ThenBy(e => e.ReleaseDate.HasValue && e.ReleaseDate.Value >= today
-                ? e.ReleaseDate.Value
-                : DateTime.MaxValue)
-            .ThenByDescending(e => e.ReleaseDate)
+            // group by Status: Watching first (0), then PlanToWatch (1)
+            .OrderBy(e => e.Status == WatchStatus.Watching ? 0 : 1)
+            // split Timeline: future/today first (0), then past (1)
+            .ThenBy(e => e.ReleaseDate.HasValue && e.ReleaseDate.Value >= today ? 0 : 1)
+            // handle future dates: ascending order (earliest future release first)
+            // if its in the past, we use MaxValue so it stays at the bottom of this specific sort tier
+            .ThenBy(e => e.ReleaseDate.HasValue && e.ReleaseDate.Value >= today ? e.ReleaseDate.Value : DateTime.MaxValue)
+            // handle past dates: descending order (most recent past release first)
+            // if its in the future, we use MinValue so it doesn't interfere with this sort tier
+            .ThenByDescending(e => e.ReleaseDate.HasValue && e.ReleaseDate.Value < today ? e.ReleaseDate.Value : DateTime.MinValue)
+            // tie-breaker: alphabetical by title
             .ThenBy(e => e.Title)
             .ToListAsync();
     }
