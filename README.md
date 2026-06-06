@@ -24,7 +24,7 @@ This application is built as a **Modular Monolith** to enforce strict module sep
 - **Modules/Media:** Contains models, enums, `MediaDbContext`, and `MediaService` for library management.
 - **Modules/MediaData:** Contains `MediaDataDbContext` and `MediaDataService` for storing dynamic metadata associated with media entries.
 - **Decoupling & Isolation:** Both modules target the same database but use completely independent EF Core DbContexts, ensuring no direct database-level dependency exists between the modules.
-- **Frontend/UI:** Uses the standard Razor Pages (PageModel) paired with ViewComponents (`AddMedia` and `MediaDetail`) as components for modals. Interaction fully relies on Razor Pages' server-side rendering. This approach somewhat resembles classic WebForms, but is completely stateless. While this approach increases development complexity, it could improve search engine optimization (SEO) in the future.
+- **Frontend/UI:** Uses the standard Razor Pages (PageModel) paired with ViewComponents (`AddMedia` and `MediaDetail`) as components for modals. Interaction fully relies on Razor Pages' server-side rendering. This approach somewhat resembles classic WebForms, but is completely stateless per request. While this approach increases development complexity, it could improve search engine optimization (SEO) in the future.
 
 ## Features
 
@@ -61,6 +61,8 @@ Database connection string in `appsettings.json`.
 ![screenshot](Screenshots/5.png?raw=true)
 
 ![screenshot](Screenshots/7.png?raw=true)
+
+![screenshot](Screenshots/9.png?raw=true)
 
 ## License
 
