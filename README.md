@@ -62,6 +62,8 @@ Database connection string in `appsettings.json`.
 
 ![screenshot](Screenshots/7.png?raw=true)
 
+![screenshot](Screenshots/9.png?raw=true)
+
 ## License
 
 MIT
