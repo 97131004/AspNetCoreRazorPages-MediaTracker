@@ -21,8 +21,8 @@ Media Tracker is a ASP.NET Core web application designed to centralize the track
 
 This application is built as a **Modular Monolith** to enforce strict module separation and decoupling:
 
-- **Modules/Media:** Contains models, enums, `MediaDbContext`, and `MediaService` for library management.
-- **Modules/MediaData:** Contains `MediaDataDbContext` and `MediaDataService` for storing dynamic metadata associated with media entries.
+- **Modules/Media:** Contains models, enums, `MediaDbContext`, and `MediaService`, `IMediaService` for library management.
+- **Modules/MediaData:** Contains `MediaDataDbContext` and `MediaDataService`, `IMediaDataService` for storing dynamic metadata associated with media entries.
 - **Decoupling & Isolation:** Both modules target the same database but use completely independent EF Core DbContexts, ensuring no direct database-level dependency exists between the modules.
 - **Frontend/UI:** Uses the standard Razor Pages (PageModel) paired with ViewComponents (`AddMedia` and `MediaDetail`) as components for modals. Interaction fully relies on Razor Pages' server-side rendering. This approach somewhat resembles classic WebForms, but is completely stateless per request. While this approach increases development complexity, it could improve search engine optimization (SEO) in the future.
 
