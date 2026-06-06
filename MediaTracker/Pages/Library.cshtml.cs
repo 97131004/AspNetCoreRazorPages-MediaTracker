@@ -5,6 +5,7 @@ using MediaTracker.Modules.MediaData.Models;
 using MediaTracker.Modules.MediaData.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Routing;
 
 namespace MediaTracker.Pages;
 
@@ -24,10 +25,6 @@ public class LibraryModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public LibraryFilterOptions Filter { get; set; } = new();
-
-    public SortColumn CurrentSort => Filter.ActiveSort;
-    public SortDirection CurrentDir => Filter.ActiveDir;
-    public MediaType? CurrentType => Filter.ActiveType;
 
     public bool ShowAddDialog { get; set; }
 
@@ -61,17 +58,19 @@ public class LibraryModel : PageModel
 
     public string SortHref(SortColumn col)
     {
-        var newDir = (CurrentSort == col && CurrentDir == SortDirection.Ascending) ? SortDirection.Descending : SortDirection.Ascending;
+        var activeSort = Filter.GetActiveSort();
+        var activeDir = Filter.GetActiveDir();
+        var newDir = (activeSort == col && activeDir == SortDirection.Ascending) ? SortDirection.Descending : SortDirection.Ascending;
         var typePart = !string.IsNullOrEmpty(Filter.Type) ? $"&type={Filter.Type}" : "";
         return $"?sort={col}&dir={newDir}{typePart}";
     }
 
-    public string SortIndicator(SortColumn col) => CurrentSort == col ? (CurrentDir == SortDirection.Ascending ? " ↑" : " ↓") : "";
+    public string SortIndicator(SortColumn col) => Filter.GetActiveSort() == col ? (Filter.GetActiveDir() == SortDirection.Ascending ? " ↑" : " ↓") : "";
 
     public string TypeHref(string? type)
     {
         var typePart = type != null ? $"type={type}&" : "";
-        return $"?{typePart}sort={CurrentSort}&dir={CurrentDir}";
+        return $"?{typePart}sort={Filter.GetActiveSort()}&dir={Filter.GetActiveDir()}";
     }
 
     public IReadOnlyList<MediaDataEntry> GetItemData(Guid id)
@@ -83,14 +82,14 @@ public class LibraryModel : PageModel
     public string DetailHref(Guid id)
     {
         var typePart = !string.IsNullOrEmpty(Filter.Type) ? $"&type={Filter.Type}" : "";
-        return $"?sort={CurrentSort}&dir={CurrentDir}{typePart}&detail={id}";
+        return $"?sort={Filter.GetActiveSort()}&dir={Filter.GetActiveDir()}{typePart}&detail={id}";
     }
 
     // link that closes the detail dialog (same url without detail param)
     public string CloseDetailHref()
     {
         var typePart = !string.IsNullOrEmpty(Filter.Type) ? $"&type={Filter.Type}" : "";
-        return $"?sort={CurrentSort}&dir={CurrentDir}{typePart}";
+        return $"?sort={Filter.GetActiveSort()}&dir={Filter.GetActiveDir()}{typePart}";
     }
 
     // handlers
@@ -125,7 +124,7 @@ public class LibraryModel : PageModel
             return Page();
         }
 
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type });
+        return RedirectToPage(Filter);
     }
 
     // library inline edits
@@ -137,7 +136,7 @@ public class LibraryModel : PageModel
         await MediaService.DeleteAsync(id);
         await MediaDataService.DeleteAllForMediaAsync(id);
         TempData["Removed"] = $"\"{title}\" removed.";
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type });
+        return RedirectToPage(Filter);
     }
 
     public async Task<IActionResult> OnPostUpdateStatusAsync(Guid id, int newStatus)
@@ -156,7 +155,7 @@ public class LibraryModel : PageModel
             TempData["Success"] = $"\"{entry.Title}\" status updated to {statusLabel}.";
         }
 
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type });
+        return RedirectToPage(Filter);
     }
 
     public async Task<IActionResult> OnPostUpdateReleaseDateAsync(Guid id, DateTime? newReleaseDate)
@@ -168,7 +167,7 @@ public class LibraryModel : PageModel
             var dateStr = newReleaseDate?.ToString("yyyy-MM-dd") ?? "none";
             TempData["Success"] = $"\"{entry.Title}\" release date updated to {dateStr}.";
         }
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type });
+        return RedirectToPage(Filter);
     }
 
     public async Task<IActionResult> OnPostUpdateTitleAsync(Guid id, string newTitle)
@@ -180,7 +179,7 @@ public class LibraryModel : PageModel
             await MediaService.UpdateTitleAsync(id, newTitle);
             TempData["Success"] = $"\"{oldTitle}\" title updated to \"{newTitle.Trim()}\".";
         }
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type });
+        return RedirectToPage(Filter);
     }
 
     public async Task<IActionResult> OnPostUpdateRatingAsync(Guid id, int? rating)
@@ -192,7 +191,7 @@ public class LibraryModel : PageModel
             var ratingStr = rating.HasValue ? $"{rating}/10" : "none";
             TempData["Success"] = $"\"{entry.Title}\" rating updated to {ratingStr}.";
         }
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type });
+        return RedirectToPage(Filter);
     }
 
     // detail dialog: media data crud
@@ -237,14 +236,18 @@ public class LibraryModel : PageModel
 
     private async Task LoadAsync()
     {
-        Items = await MediaService.GetListAsync(CurrentSort, CurrentDir, CurrentType);
+        Items = await MediaService.GetListAsync(Filter.GetActiveSort(), Filter.GetActiveDir(), Filter.GetActiveType());
         var allData = await MediaDataService.GetByMediaIdsAsync(Items.Select(i => i.Id));
         ItemData = allData.GroupBy(d => d.MediaId).ToDictionary(g => g.Key, g => g.ToList());
     }
 
     private IActionResult RedirectToDetail(Guid detailId)
     {
-        return RedirectToPage(new { sort = Filter.Sort, dir = Filter.Dir, type = Filter.Type, detail = detailId });
+        var routeValues = new RouteValueDictionary(Filter)
+        {
+            ["detail"] = detailId
+        };
+        return RedirectToPage(routeValues);
     }
 }
 
@@ -254,29 +257,46 @@ public class LibraryFilterOptions
     public string? Dir { get; set; }
     public string? Type { get; set; }
 
-    public SortColumn ActiveSort => Enum.TryParse<SortColumn>(Sort, true, out var sortCol) ? sortCol : SortColumn.Created;
-
-    public SortDirection ActiveDir
+    public SortColumn GetActiveSort()
     {
-        get
-        {
-            if (Enum.TryParse<SortDirection>(Dir, true, out var sortDir))
-            {
-                return sortDir;
-            }
-            if (Dir?.ToLowerInvariant() == "asc")
-            {
-                return SortDirection.Ascending;
-            }
-            return SortDirection.Descending;
-        }
+        return Enum.TryParse<SortColumn>(Sort, true, out var sortCol) ? sortCol : SortColumn.Created;
     }
 
-    public MediaType? ActiveType => Type?.ToLowerInvariant() switch
+    public SortDirection GetActiveDir()
+    {
+        if (Enum.TryParse<SortDirection>(Dir, true, out var sortDir))
+        {
+            return sortDir;
+        }
+        if (Dir?.ToLowerInvariant() == "asc")
+        {
+            return SortDirection.Ascending;
+        }
+        return SortDirection.Descending;
+    }
+
+    public MediaType? GetActiveType() => Type?.ToLowerInvariant() switch
     {
         "movie" => MediaType.Movie,
         "tvshow" or "tv_show" => MediaType.TvShow,
         "game" => MediaType.Game,
         _ => null
     };
+
+    public string ToHiddenInputsHtml()
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var prop in GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+        {
+            if (prop.CanRead && prop.CanWrite && (prop.PropertyType == typeof(string) || prop.PropertyType.IsValueType))
+            {
+                var val = prop.GetValue(this);
+                if (val != null)
+                {
+                    sb.Append($"<input type='hidden' name='{prop.Name}' value='{System.Text.Encodings.Web.HtmlEncoder.Default.Encode(val.ToString()!)}' />");
+                }
+            }
+        }
+        return sb.ToString();
+    }
 }

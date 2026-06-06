@@ -29,10 +29,7 @@
     static string WatchLabel(MediaType t) => t == MediaType.Game ? "Playing" : "Watching";
     static string DoneLabel(MediaType t) => t == MediaType.Game ? "Played" : "Completed";
 
-    string HiddenState() =>
-        "<input type='hidden' name='sort' value='" + Model.Filter.Sort + "' />" +
-        "<input type='hidden' name='dir' value='" + Model.Filter.Dir + "' />" +
-        "<input type='hidden' name='type' value='" + Model.Filter.Type + "' />";
+    string HiddenState() => Model.Filter.ToHiddenInputsHtml();
 
     static bool IsUrl(string v) =>
         v.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
@@ -66,10 +63,10 @@
 </div>
 
 <div class="filter-row">
-    <a href="@Model.TypeHref(null)" class="btn btn-sm @(Model.CurrentType == null ? "btn-primary" : "btn-ghost")">All</a>
-    <a href="@Model.TypeHref("movie")" class="btn btn-sm @(Model.CurrentType == MediaType.Movie  ? "btn-primary" : "btn-ghost")">Movies</a>
-    <a href="@Model.TypeHref("tvshow")" class="btn btn-sm @(Model.CurrentType == MediaType.TvShow ? "btn-primary" : "btn-ghost")">TV Shows</a>
-    <a href="@Model.TypeHref("game")" class="btn btn-sm @(Model.CurrentType == MediaType.Game ? "btn-primary" : "btn-ghost")">Games</a>
+    <a href="@Model.TypeHref(null)" class="btn btn-sm @(Model.Filter.GetActiveType() == null ? "btn-primary" : "btn-ghost")">All</a>
+    <a href="@Model.TypeHref("movie")" class="btn btn-sm @(Model.Filter.GetActiveType() == MediaType.Movie  ? "btn-primary" : "btn-ghost")">Movies</a>
+    <a href="@Model.TypeHref("tvshow")" class="btn btn-sm @(Model.Filter.GetActiveType() == MediaType.TvShow ? "btn-primary" : "btn-ghost")">TV Shows</a>
+    <a href="@Model.TypeHref("game")" class="btn btn-sm @(Model.Filter.GetActiveType() == MediaType.Game ? "btn-primary" : "btn-ghost")">Games</a>
 </div>
 
 @if (!Model.Items.Any())
