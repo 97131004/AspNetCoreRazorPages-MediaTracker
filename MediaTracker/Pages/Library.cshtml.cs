@@ -12,10 +12,10 @@ namespace MediaTracker.Pages;
 
 public class LibraryModel : PageModel
 {
-    private readonly MediaService MediaService;
-    private readonly MediaDataService MediaDataService;
+    private readonly IMediaService MediaService;
+    private readonly IMediaDataService MediaDataService;
 
-    public LibraryModel(MediaService mediaService, MediaDataService mediaDataService)
+    public LibraryModel(IMediaService mediaService, IMediaDataService mediaDataService)
     {
         MediaService = mediaService;
         MediaDataService = mediaDataService;

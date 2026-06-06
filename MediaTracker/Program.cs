@@ -14,8 +14,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<MediaDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDbContext<MediaDataDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<MediaService>();
-builder.Services.AddScoped<MediaDataService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddScoped<IMediaDataService, MediaDataService>();
 
 var app = builder.Build();
 

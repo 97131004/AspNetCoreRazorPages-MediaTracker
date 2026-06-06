@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MediaTracker.Modules.MediaData.Services;
 
-public class MediaDataService
+public class MediaDataService : IMediaDataService
 {
     private readonly MediaDataDbContext MediaDataDb;
 

@@ -1,15 +1,15 @@
-using MediaTracker.Modules.Media;
 using MediaTracker.Modules.Media.Models;
+using MediaTracker.Modules.Media.Services;
+using MediaTracker.Shared.UI;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace MediaTracker.Pages;
 
 public class IndexModel : PageModel
 {
-    private readonly MediaDbContext MediaDb;
+    private readonly IMediaService MediaService;
 
-    public IndexModel(MediaDbContext db) => MediaDb = db;
+    public IndexModel(IMediaService mediaService) => MediaService = mediaService;
 
     public List<MediaEntry> Items { get; set; } = new();
     public MediaType? CurrentType { get; set; }
@@ -24,15 +24,11 @@ public class IndexModel : PageModel
             _ => null
         };
 
-        var query = MediaDb.MediaEntries.Where(e => e.Status == WatchStatus.PlanToWatch || e.Status == WatchStatus.Watching);
-
-        if (CurrentType.HasValue)
-        {
-            query = query.Where(e => e.MediaType == CurrentType.Value);
-        }
+        var allEntries = await MediaService.GetListAsync(SortColumn.Created, SortDirection.Descending, CurrentType);
 
         var today = DateTime.Today;
-        Items = await query
+        Items = allEntries
+            .Where(e => e.Status == WatchStatus.PlanToWatch || e.Status == WatchStatus.Watching)
             // group by Status: Watching first (0), then PlanToWatch (1)
             .OrderBy(e => e.Status == WatchStatus.Watching ? 0 : 1)
             // split Timeline: future/today first (0), then past (1)
@@ -45,7 +41,7 @@ public class IndexModel : PageModel
             .ThenByDescending(e => e.ReleaseDate.HasValue && e.ReleaseDate.Value < today ? e.ReleaseDate.Value : DateTime.MinValue)
             // tie-breaker: alphabetical by title
             .ThenBy(e => e.Title)
-            .ToListAsync();
+            .ToList();
     }
 
     public string TypeHref(string? type)
