@@ -5,7 +5,7 @@ using MediaTracker.Modules.Media.Models;
 
 using System.Threading.Tasks;
 
-namespace MediaTracker.Pages.Shared.Components;
+namespace MediaTracker.ViewComponents;
 
 public class AddMediaViewComponent : ViewComponent
 {

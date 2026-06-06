@@ -1,4 +1,4 @@
-namespace MediaTracker.Modules.Media.Models;
+namespace MediaTracker.Shared.UI;
 
 public enum SortColumn
 {

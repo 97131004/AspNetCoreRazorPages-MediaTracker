@@ -1,4 +1,5 @@
 using MediaTracker.Modules.Media.Models;
+using MediaTracker.Shared.UI;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediaTracker.Modules.Media.Services;

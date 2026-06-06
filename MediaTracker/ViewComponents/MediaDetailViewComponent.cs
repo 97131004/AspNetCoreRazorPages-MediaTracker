@@ -7,7 +7,7 @@ using MediaTracker.Pages;
 
 using System.Threading.Tasks;
 
-namespace MediaTracker.Pages.Shared.Components;
+namespace MediaTracker.ViewComponents;
 
 public class MediaDetailViewComponent : ViewComponent
 {
