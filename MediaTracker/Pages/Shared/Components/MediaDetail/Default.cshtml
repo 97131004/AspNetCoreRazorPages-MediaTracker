@@ -29,7 +29,7 @@
                             <td colspan="2">
                                 <form method="post" asp-page-handler="DetailUpdate" class="inline-edit-form">
                                     @Html.Raw(Model.HiddenDetailState())
-                                    <input type="hidden" name="entryId" value="@entry.Id" />
+                                    <input type="hidden" name="detailId" value="@entry.Id" />
                                     <input type="text" name="dataType" value="@entry.DataType"
                                            class="inline-datatype" required />
                                     <input type="text" name="value" value="@entry.Value"
@@ -40,7 +40,7 @@
                             <td>
                                 <form method="post" asp-page-handler="DetailDelete">
                                     @Html.Raw(Model.HiddenDetailState())
-                                    <input type="hidden" name="entryId" value="@entry.Id" />
+                                    <input type="hidden" name="detailId" value="@entry.Id" />
                                     <button type="submit" class="btn btn-sm btn-danger">Remove</button>
                                 </form>
                             </td>

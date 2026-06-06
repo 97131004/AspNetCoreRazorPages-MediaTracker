@@ -47,9 +47,9 @@
 
 @await Component.InvokeAsync("AddMedia", new { model = Model })
 
-@if (Model.DetailId.HasValue)
+@if (Model.MediaId.HasValue)
 {
-    var targetMedia = Model.Items.FirstOrDefault(i => i.Id == Model.DetailId.Value);
+    var targetMedia = Model.Items.FirstOrDefault(i => i.Id == Model.MediaId.Value);
     if (targetMedia is not null)
     {
         var detailItems = Model.GetItemData(targetMedia.Id).ToList();

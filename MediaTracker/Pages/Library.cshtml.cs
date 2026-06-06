@@ -31,7 +31,7 @@ public class LibraryModel : PageModel
 
     // detail dialog
 
-    public Guid? DetailId { get; set; }
+    public Guid? MediaId { get; set; }
     public Dictionary<Guid, List<MediaDataEntry>> ItemData { get; set; } = new();
 
     // add media form
@@ -83,7 +83,7 @@ public class LibraryModel : PageModel
     public string DetailHref(Guid id)
     {
         var typePart = !string.IsNullOrEmpty(Filter.Type) ? $"&type={Filter.Type}" : "";
-        return $"?sort={Filter.GetActiveSort()}&dir={Filter.GetActiveDir()}{typePart}&detail={id}";
+        return $"?sort={Filter.GetActiveSort()}&dir={Filter.GetActiveDir()}{typePart}&mediaId={id}";
     }
 
     // link that closes the detail dialog (same url without detail param)
@@ -95,10 +95,10 @@ public class LibraryModel : PageModel
 
     // handlers
 
-    public async Task OnGetAsync(Guid? detail)
+    public async Task OnGetAsync(Guid? mediaId)
     {
         await LoadAsync();
-        DetailId = detail;
+        MediaId = mediaId;
     }
 
     // add media
@@ -197,40 +197,40 @@ public class LibraryModel : PageModel
 
     // detail dialog: media data crud
 
-    public async Task<IActionResult> OnPostDetailAddAsync(Guid detailId, string? newDataType, string? newDataValue)
+    public async Task<IActionResult> OnPostDetailAddAsync(Guid mediaId, string? newDataType, string? newDataValue)
     {
         if (!string.IsNullOrWhiteSpace(newDataType) && !string.IsNullOrWhiteSpace(newDataValue))
         {
-            await MediaDataService.AddAsync(detailId, newDataType, newDataValue);
-            var entry = await MediaService.GetByIdAsync(detailId);
+            await MediaDataService.AddAsync(mediaId, newDataType, newDataValue);
+            var entry = await MediaService.GetByIdAsync(mediaId);
             var title = entry?.Title ?? "Item";
             TempData["Success"] = $"Added \"{newDataType.Trim()}: {newDataValue.Trim()}\" to \"{title}\".";
         }
 
-        return RedirectToDetail(detailId);
+        return RedirectToDetail(mediaId);
     }
 
-    public async Task<IActionResult> OnPostDetailUpdateAsync(Guid detailId, Guid entryId, string? dataType, string? value)
+    public async Task<IActionResult> OnPostDetailUpdateAsync(Guid mediaId, Guid detailId, string? dataType, string? value)
     {
         if (!string.IsNullOrWhiteSpace(dataType) && !string.IsNullOrWhiteSpace(value))
         {
-            await MediaDataService.UpdateAsync(entryId, dataType, value);
-            var entry = await MediaService.GetByIdAsync(detailId);
+            await MediaDataService.UpdateAsync(detailId, dataType, value);
+            var entry = await MediaService.GetByIdAsync(mediaId);
             var title = entry?.Title ?? "Item";
             TempData["Success"] = $"Updated detail for \"{title}\" to \"{dataType.Trim()}: {value.Trim()}\".";
         }
 
-        return RedirectToDetail(detailId);
+        return RedirectToDetail(mediaId);
     }
 
-    public async Task<IActionResult> OnPostDetailDeleteAsync(Guid detailId, Guid entryId)
+    public async Task<IActionResult> OnPostDetailDeleteAsync(Guid mediaId, Guid detailId)
     {
-        var dataEntry = await MediaDataService.DeleteAsync(entryId);
+        var dataEntry = await MediaDataService.DeleteAsync(detailId);
         var label = dataEntry is not null ? $"\"{dataEntry.DataType}: {dataEntry.Value}\"" : "detail";
-        var entry = await MediaService.GetByIdAsync(detailId);
+        var entry = await MediaService.GetByIdAsync(mediaId);
         var title = entry?.Title ?? "Item";
         TempData["Removed"] = $"Removed {label} from \"{title}\".";
-        return RedirectToDetail(detailId);
+        return RedirectToDetail(mediaId);
     }
 
     // private helpers
@@ -242,11 +242,11 @@ public class LibraryModel : PageModel
         ItemData = allData.GroupBy(d => d.MediaId).ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private IActionResult RedirectToDetail(Guid detailId)
+    private IActionResult RedirectToDetail(Guid mediaId)
     {
         var routeValues = new RouteValueDictionary(Filter)
         {
-            ["detail"] = detailId
+            ["mediaId"] = mediaId
         };
         return RedirectToPage(routeValues);
     }
