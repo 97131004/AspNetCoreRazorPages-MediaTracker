@@ -7,12 +7,9 @@
             <button type="button" class="dialog-close" onclick="document.getElementById('add-dialog').close()">&#x2715;</button>
         </div>
         <form method="post" asp-page-handler="Add" novalidate>
-            <input type="hidden" name="sort" value="@Model.CurrentSort" />
-            <input type="hidden" name="dir" value="@Model.CurrentDir" />
-            @if (Model.CurrentType.HasValue)
-            {
-                <input type="hidden" name="type" value="@Model.CurrentType.Value.ToString().ToLower()" />
-            }
+            <input type="hidden" name="sort" value="@Model.Filter.Sort" />
+            <input type="hidden" name="dir" value="@Model.Filter.Dir" />
+            <input type="hidden" name="type" value="@Model.Filter.Type" />
             @{
                 var globalErrors = ViewData.ModelState[string.Empty]?.Errors;
             }

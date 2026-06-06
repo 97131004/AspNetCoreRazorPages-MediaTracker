@@ -17,9 +17,7 @@ public class MediaDetailViewComponent : ViewComponent
         {
             Media = media,
             DetailItems = detailItems,
-            CurrentSort = model.CurrentSort,
-            CurrentDir = model.CurrentDir,
-            CurrentType = model.CurrentType
+            Filter = model.Filter
         };
 
         return Task.FromResult<IViewComponentResult>(View(viewModel));
@@ -30,9 +28,7 @@ public class MediaDetailViewModel
 {
     public MediaEntry Media { get; set; } = null!;
     public List<MediaDataEntry> DetailItems { get; set; } = new();
-    public SortColumn CurrentSort { get; set; } = SortColumn.Created;
-    public SortDirection CurrentDir { get; set; } = SortDirection.Descending;
-    public MediaType? CurrentType { get; set; }
+    public LibraryFilterOptions Filter { get; set; } = new();
 
     public string TagClass => Media.MediaType switch
     {
@@ -45,15 +41,15 @@ public class MediaDetailViewModel
     public string TypeLabel => Media.MediaType == MediaType.TvShow ? "TV Show" : Media.MediaType.ToString();
 
     public string HiddenState() =>
-        "<input type='hidden' name='sort' value='" + CurrentSort + "' />" +
-        "<input type='hidden' name='dir' value='" + CurrentDir + "' />" +
-        (CurrentType.HasValue ? "<input type='hidden' name='type' value='" + CurrentType.Value.ToString().ToLower() + "' />" : "");
+        "<input type='hidden' name='sort' value='" + Filter.Sort + "' />" +
+        "<input type='hidden' name='dir' value='" + Filter.Dir + "' />" +
+        "<input type='hidden' name='type' value='" + Filter.Type + "' />";
 
     public string HiddenDetailState() => HiddenState() + "<input type='hidden' name='detailId' value='" + Media.Id + "' />";
 
     public string CloseDetailHref()
     {
-        var typePart = CurrentType.HasValue ? $"&type={CurrentType.Value.ToString().ToLower()}" : "";
-        return $"?sort={CurrentSort}&dir={CurrentDir}{typePart}";
+        var typePart = !string.IsNullOrEmpty(Filter.Type) ? $"&type={Filter.Type}" : "";
+        return $"?sort={Filter.Sort}&dir={Filter.Dir}{typePart}";
     }
 }

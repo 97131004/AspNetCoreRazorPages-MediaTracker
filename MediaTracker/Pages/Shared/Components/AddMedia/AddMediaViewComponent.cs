@@ -13,9 +13,7 @@ public class AddMediaViewComponent : ViewComponent
     {
         var viewModel = new AddMediaViewModel
         {
-            CurrentSort = model.CurrentSort,
-            CurrentDir = model.CurrentDir,
-            CurrentType = model.CurrentType,
+            Filter = model.Filter,
             NewTitle = model.NewTitle,
             NewType = model.NewType,
             NewReleaseDate = model.NewReleaseDate,
@@ -29,9 +27,7 @@ public class AddMediaViewComponent : ViewComponent
 
 public class AddMediaViewModel
 {
-    public SortColumn CurrentSort { get; set; } = SortColumn.Created;
-    public SortDirection CurrentDir { get; set; } = SortDirection.Descending;
-    public MediaType? CurrentType { get; set; }
+    public LibraryFilterOptions Filter { get; set; } = new();
 
     public string NewTitle { get; set; } = string.Empty;
     public MediaType? NewType { get; set; }

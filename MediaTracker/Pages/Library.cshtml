@@ -30,9 +30,9 @@
     static string DoneLabel(MediaType t) => t == MediaType.Game ? "Played" : "Completed";
 
     string HiddenState() =>
-        "<input type='hidden' name='sort' value='" + Model.CurrentSort + "' />" +
-        "<input type='hidden' name='dir' value='" + Model.CurrentDir + "' />" +
-        (Model.CurrentType.HasValue ? "<input type='hidden' name='type' value='" + Model.CurrentType.Value.ToString().ToLower() + "' />" : "");
+        "<input type='hidden' name='sort' value='" + Model.Filter.Sort + "' />" +
+        "<input type='hidden' name='dir' value='" + Model.Filter.Dir + "' />" +
+        "<input type='hidden' name='type' value='" + Model.Filter.Type + "' />";
 
 
 

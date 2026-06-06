@@ -9,13 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<MediaDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
-builder.Services.AddDbContext<MediaDataDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<MediaDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<MediaDataDbContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<MediaDataService>();
@@ -31,8 +28,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        scope.ServiceProvider.GetRequiredService<ILogger<Program>>()
-            .LogError(ex, "An error occurred while migrating the database.");
+        scope.ServiceProvider.GetRequiredService<ILogger<Program>>().LogError(ex, "An error occurred while migrating the database.");
         throw;
     }
 }
