@@ -15,7 +15,7 @@ Media Tracker is a ASP.NET Core web application designed to centralize the track
 - **Backend:** ASP.NET Core (.NET 8.0)
 - **Frontend:** Razor Pages, View Components
 - **Database:** MS SQL Server 2022 (LocalDB)
-- **ORM:** Entity Framework Core 9.0.0
+- **ORM:** Entity Framework Core 8
 
 ## Architecture
 
