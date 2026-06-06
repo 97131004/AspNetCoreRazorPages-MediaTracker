@@ -49,11 +49,11 @@
 
 @if (Model.DetailId.HasValue)
 {
-    var detailMedia = Model.Items.FirstOrDefault(i => i.Id == Model.DetailId.Value);
-    if (detailMedia is not null)
+    var targetMedia = Model.Items.FirstOrDefault(i => i.Id == Model.DetailId.Value);
+    if (targetMedia is not null)
     {
-        var detailItems = Model.GetItemData(detailMedia.Id).ToList();
-        @await Component.InvokeAsync("MediaDetail", new { media = detailMedia, detailItems = detailItems, model = Model })
+        var detailItems = Model.GetItemData(targetMedia.Id).ToList();
+        @await Component.InvokeAsync("MediaDetail", new { media = targetMedia, detailItems = detailItems, model = Model })
     }
 }
 

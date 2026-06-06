@@ -40,12 +40,7 @@ public class MediaDetailViewModel
 
     public string TypeLabel => Media.MediaType == MediaType.TvShow ? "TV Show" : Media.MediaType.ToString();
 
-    public string HiddenState() =>
-        "<input type='hidden' name='sort' value='" + Filter.Sort + "' />" +
-        "<input type='hidden' name='dir' value='" + Filter.Dir + "' />" +
-        "<input type='hidden' name='type' value='" + Filter.Type + "' />";
-
-    public string HiddenDetailState() => HiddenState() + "<input type='hidden' name='detailId' value='" + Media.Id + "' />";
+    public string HiddenDetailState() => Filter.ToHiddenInputsHtml() + "<input type='hidden' name='detailId' value='" + Media.Id + "' />";
 
     public string CloseDetailHref()
     {

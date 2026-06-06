@@ -6,7 +6,7 @@
             <span class="dialog-title">Add Media</span>
             <button type="button" class="dialog-close" onclick="document.getElementById('add-dialog').close()">&#x2715;</button>
         </div>
-        <form method="post" asp-page-handler="Add" novalidate>
+        <form method="post" asp-page-handler="Add">
             @Html.Raw(Model.Filter.ToHiddenInputsHtml())
             @{
                 var globalErrors = ViewData.ModelState[string.Empty]?.Errors;
