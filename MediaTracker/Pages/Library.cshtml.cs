@@ -267,7 +267,7 @@ public class LibraryFilterOptions
     {
         if (Enum.TryParse<SortDirection>(Dir, true, out var sortDir))
         {
-            return sortDir;
+            return sortDir; 
         }
         if (Dir?.ToLowerInvariant() == "asc")
         {
