@@ -9,7 +9,7 @@
                     <span class="tag @Model.TagClass">@Model.TypeLabel</span>
                 </div>
             </div>
-            <a href="@Model.CloseDetailHref()" class="dialog-close">&#x2715;</a>
+            <a onclick="document.getElementById('detail-dialog').close()" class="dialog-close">&#x2715;</a>
         </div>
 
         @if (Model.DetailItems.Count > 0)
